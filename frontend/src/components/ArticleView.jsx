@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useParams } from "react-router-dom";
+import styled from "styled-components";
+
+  const Article = styled.div`
+margin-top: -600px;
+margin-left: 280px;
+width: 950px;
+`;
 
 
-function ArticleView({ id, onBack }) {
- const [article, setArticle] = useState(null);
-
+function ArticleView() {
+  const [article, setArticle] = useState(null);
+  const { id } = useParams();
 
   useEffect(() => {
     axios.get(`http://localhost:3000/articles/${id}`)
@@ -12,15 +22,17 @@ function ArticleView({ id, onBack }) {
       .catch(() => setArticle(null));
   }, [id]);
 
+  if (article === null) return <p>Loading...</p>;
   if (!article) return <p>Article not found</p>;
 
+
   return (
-    <div>
-      <button onClick={(onBack)}>&#8592; Back</button>
+    <Article>
       <h2>{article.title}</h2>
       <div dangerouslySetInnerHTML={{ __html: article.content }} />
-      <small>Создано: {new Date(article.createdAt).toLocaleString()}</small>
-    </div>
+      <small>Created: {new Date(article.createdAt).toLocaleString()}</small>
+      <ToastContainer position="top-center" autoClose={4000} />
+    </Article>
   );
 }
 

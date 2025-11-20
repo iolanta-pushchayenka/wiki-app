@@ -6,6 +6,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AttachPage from "../pages/AttachPage";
 
 const Container = styled.div`
   display: flex;
@@ -14,7 +15,6 @@ const Container = styled.div`
   padding: 40px;
   max-width: 800px;
   margin-top: -600px;
-  margin-left: 300px;
 `;
 
 const Title = styled.h2`
@@ -46,6 +46,7 @@ const Button = styled.button`
   cursor: pointer;
   transition: transform 0.2s ease;
   margin-top: 20px;
+  margin-right: 550px;
 
   &:hover {
     transform: scale(1.05);
@@ -67,7 +68,7 @@ const modules = {
   ]
 }
 
-export default function ArticleEdit() {
+export default function ArticleEdit({ article, setArticle }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -75,37 +76,25 @@ export default function ArticleEdit() {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
 
-
-const isContentEmpty = (html) => {
-  const stripped = html.replace(/<(.|\n)*?>/g, "").trim(); // удаляем все HTML-теги
-  return !stripped; // true если пусто
-};
+  const isContentEmpty = (html) =>
+    !html.replace(/<[^>]+>/g, "").trim();
 
   useEffect(() => {
-    const fetchArticle = async () => {
-      try {
-        const res = await axios.get(`http://localhost:3000/articles/${id}`);
-        setTitle(res.data.title);
-        setContent(res.data.content);
-      } catch (err) {
-        console.error(err);
-        toast.error("Couldn't upload the article");
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (article) {
+      setTitle(article.title);
+      setContent(article.content);
+      setLoading(false);
+    }
+  }, [article]);
 
-    fetchArticle();
-  }, [id]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    // ✅ Проверка перед отправкой
-  if (!title.trim() || isContentEmpty(content)) {
-    toast.error("Title and content are required!");
-    return;
-  }
+    if (!title.trim() || isContentEmpty(content)) {
+      toast.error("Title and content are required!");
+      return;
+    }
 
     try {
       await axios.put(`http://localhost:3000/articles/${id}`, {
@@ -113,7 +102,7 @@ const isContentEmpty = (html) => {
         content,
       });
       toast.success("The article has been successfully updated!");
-      setTimeout(() => navigate("/"), 3000);
+      setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       console.error(err);
       toast.error("Error saving changes");
@@ -123,7 +112,7 @@ const isContentEmpty = (html) => {
   if (loading) {
     return (
       <p style={{ textAlign: "center", marginTop: "100px" }}>
-       Uploading an article...
+        Uploading an article...
       </p>
     );
   }
@@ -146,6 +135,12 @@ const isContentEmpty = (html) => {
             modules={modules}
             placeholder="Введите текст статьи..."
             style={{ height: "300px", marginBottom: "60px" }}
+          />
+
+          <AttachPage
+            article={article}
+            setArticle={setArticle}
+            id={id}
           />
 
           <Button type="submit">Save</Button>

@@ -1,5 +1,4 @@
 import cors from 'cors'; 
-import { create } from 'domain';
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path'; 
@@ -10,7 +9,7 @@ const wiki_app = express()
 wiki_app.use(express.json())  
 
 wiki_app.use(cors()) 
- 
+
 
 wiki_app.get('/', (req, res) => {
     res.send('API is runnig! Congratulation!!')
@@ -33,7 +32,7 @@ function makeSafeFilename(title) {
 wiki_app.get('/articles', async(req, res) => {    
     try{
     await fs.mkdir(DATA_DIR, { recursive: true });
-    const fileNames = await fs.readdir(DATA_DIR);  
+    const fileNames = await fs.readdir(DATA_DIR); 
     const jsonFiles = fileNames.filter(f => f.endsWith('.json'));
     
     const articles = [];
@@ -43,13 +42,7 @@ for (const file of jsonFiles) {
     const content = await fs.readFile(filePath, 'utf8');
     const parsed = JSON.parse(content);   
     const id = path.basename(file, '.json');
-
-    articles.push ({
-      id,
-      title: parsed.title,
-      createdAt: parsed.createdAt
-    })
-     
+    articles.push({ id, ...parsed });
   } catch (err) {
     console.error(`Failed to read/parse ${file}:`, err);
   }
@@ -71,9 +64,7 @@ wiki_app.get('/articles/:id', async (req, res) => {
     const filePath = path.join(DATA_DIR, `${id}.json`);
     const raw = await fs.readFile(filePath, 'utf8');  
     const parsed = JSON.parse(raw);
-    res.json({ id, ...parsed});
-
-  
+    res.json({ id, ...parsed });
   } catch (err) {
     console.error(err);
     if (err.code === 'ENOENT') {
@@ -90,7 +81,7 @@ wiki_app.post('/articles', async (req, res) => {
     const { title, content } = req.body;
 
     // Validation of input data
-    if (!req.body.title || !req.body.content) {
+    if (!title || !content) {
       return res.status(400).json({ error: 'Title and content required' });
     }
 
@@ -108,8 +99,7 @@ wiki_app.post('/articles', async (req, res) => {
 
     await fs.writeFile(filePath, JSON.stringify(article, null, 2), 'utf8');
 
-
-    res.status(201).json({ id: path.basename(filename, '.json'), title, content, createdAt: article.createdAt,});
+    res.status(201).json({ id: path.basename(filename, '.json'), ...article });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to save article' });
@@ -117,63 +107,8 @@ wiki_app.post('/articles', async (req, res) => {
 });
 
 
-// DELETE by id 
-
-wiki_app.delete ('/articles/:id', async (req, res) => {
-
-try {
-
-const {id} = req.params;
-const filePath  = path.join(DATA_DIR, id + '.json')
-
-await fs.access(filePath)
-
-await fs.unlink(filePath)
-res.status(204).send()
-} catch (err) {
-if (err.code === 'ENOENT' ){
-return res.status(404).json({error: 'Article Not Found'});
-}
-return res.status(500).json({error: 'Internal Server Error'});
-}
-})
-
-
-//PUT by id 
-
-wiki_app.put ('/articles/:id', async(req, res) => {
-try {
-const {id} = req.params;
-const filePath = path.join(DATA_DIR, id + '.json')
-await fs.access(filePath)
-
-const data = await fs.readFile(filePath, 'utf8')
-const article = JSON.parse(data)
-
-const {title, content} = req.body 
-if (!title || !content) {
-  return res.status(400).json({error: 'Missing title or content'})
-}
-
-const updatedArticle = {...article, title, content, createdAt: article.createdAt, updatedAt: new Date().toISOString()};
-
-await fs.writeFile(filePath, JSON.stringify(updatedArticle, null, 2))
-
-res.status(200).json(updatedArticle);
-
-
-} catch (err) {
-if (err.code === 'ENOENT') {
-return res.status(404).json({error: 'Not Found'})
-}
-return res.status(500).json({error: 'Internal Server Error'})
-}
-})
-
-
 const PORT = 3000;
 wiki_app.listen(PORT, () => {
-console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
-
 

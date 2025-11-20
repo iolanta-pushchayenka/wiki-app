@@ -1,27 +1,25 @@
 import React, { useState } from "react";
-import ArticleList from "./components/ArticleList";
-import ArticleView from "./components/ArticleView";
-import ArticleForm from "./components/ArticleForm";
+import HomePage from "./pages/HomePage";
+import ArticlePage from "./pages/ArticlePage";
+import CreatePage from "./pages/CreatePage";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import EditPage from "./pages/EditPage";
 
 
 function App() {
-  const [selectedId, setSelectedId] = useState(null);
-  const [reload, setReload] = useState(false)
-  
-return (
-  <> 
-  {!selectedId ? (
-        <>
-        <h2>Create your article &#128203;</h2>
-          <ArticleForm onCreated={() => setReload(prev => !prev)} />
-          <ArticleList onSelect={setSelectedId} key={reload} />
-        </>
-      ) : (
-        <ArticleView id={selectedId} onBack={() => setSelectedId(null)} />
-      )} 
-  </>
-)
- }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<HomePage />} />
+        <Route path='/article/:id' element={<ArticlePage />} />
+        <Route path='/create' element={<CreatePage />} />
+        <Route path="/edit/:id" element={<EditPage />} />
+      </Routes>
+    </BrowserRouter>
+
+  )
+}
 
 export default App;
 

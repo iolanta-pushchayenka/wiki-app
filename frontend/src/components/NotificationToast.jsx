@@ -10,7 +10,7 @@ export default function NotificationToast() {
     ws.onopen = () => console.log("Connected to WebSocket server");
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data); // { message: "..." }
+      const data = JSON.parse(event.data); 
       setMessages(prev => [...prev, data.message]);
 
       setTimeout(() => {

@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "multer": "^2.0.2",
-    "transliteration": "^2.3.5",
-    "ws": "^8.18.3"
-  }
-}

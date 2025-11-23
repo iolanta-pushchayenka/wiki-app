@@ -54,4 +54,48 @@ npm install
 npm run dev 
 
 
+## Установка проекта
+
+# 1. Клонировать репозиторий
+
+git clone <your-repo-url>
+cd backend
+
+# Установка
+npm install 
+
+# 2. Создать файл окружения .env
+
+# Проект уже содержит .env.example. Создай рабочий .env командой:
+
+cp .env.example .env
+
+# Открой .env и заполни параметры:
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=wiki_db
+DB_USER=postgres
+DB_PASS=your_password(заменить на свой пароль)
+
+# 3. Создать базу данных
+
+npx sequelize-cli db:create
+
+# 4.Применить миграции
+
+npx sequelize-cli db:migrate
+
+# После этого будут созданы таблицы:
+
+Articles
+
+SequelizeMeta
+
+# Проверить можно в psql:
+
+\dt
+
+# Запуск сервера
+npm start
 

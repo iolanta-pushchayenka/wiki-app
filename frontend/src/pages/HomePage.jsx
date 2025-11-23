@@ -5,6 +5,7 @@ import axios from "axios";
 import styled from "styled-components"
 import { useNavigate } from "react-router-dom";
 
+
 const Title = styled.h2`
 font-size: 20px;
 `;

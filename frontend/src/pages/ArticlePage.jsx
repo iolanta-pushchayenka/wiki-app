@@ -3,24 +3,48 @@ import axios from "axios";
 import ArticleView from '../components/ArticleView';
 import Header from '../components/Header';
 import { useParams } from "react-router-dom";
-import ArticleList from '../components/ArticleList';
+import styled from "styled-components";
+import AttachmentList from '../components/AttachmentList';
+import NotificationToast from '../components/NotificationToast';
+
+const Box = styled.div`
+display: flex;
+flex-direction: column;
+gap: 20px;
+`;
+
 
 const ArticlePage = () => {
-    const { id } = useParams();
-    const [articles, setArticles] = useState([]);
+  const { id } = useParams();
+  const [article, setArticle] = useState(null);
 
-    useEffect(() => {
-        axios.get("http://localhost:3000/articles")
-            .then(res => setArticles(res.data));
-    }, []);
+  useEffect(() => {
+    axios.get(`http://localhost:3000/articles/${id}`)
+      .then(res => setArticle(res.data))
+      .catch(err => console.error(err));
+  }, [id]);
 
-    return (
-        <div>
-            <Header />
-            <ArticleList articles={articles} setArticles={setArticles} />
-            <ArticleView id={id} />
-        </div>
-    );
+  if (!article) return <p>Loading...</p>;
+
+  const attachments = article.attachments || [];
+
+
+  return (
+    <>
+      <NotificationToast />
+      <Header />
+      <Box>
+        <ArticleView article={article} />
+
+        <AttachmentList
+          articleId={id}
+          attachments={attachments}
+          readonly={true}
+          onDelete={() => { }}
+        />
+      </Box>
+    </>
+  );
 };
 
 export default ArticlePage;

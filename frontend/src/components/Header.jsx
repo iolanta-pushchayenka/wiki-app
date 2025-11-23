@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 
 const HeaderWrapper = styled.header`
@@ -10,7 +9,7 @@ const HeaderWrapper = styled.header`
   padding: 0 20px;
   box-sizing: border-box;
   border-size: 20px;
-  background-color: #AFEEEE;
+  background-color: white;
 `;
 
 const Title = styled.h1`
@@ -26,14 +25,13 @@ export const SearchInput = styled.input`
   border-radius: 10px;
   border: 1px solid #ccc;
   font-size: 14px;
-  margin-right: 800px;
+  margin-right: 730px;
 
   &:focus {
     outline: none;
     border-color: #888;
   }
 `;
-
 
 export default function Header() {
   return (

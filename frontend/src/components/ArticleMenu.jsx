@@ -86,12 +86,16 @@ export default function ArticleMenu({ articleId, onDelete }) {
       {isOpen && (
         <MenuList>
           <MenuItemButton
-            onClick={(e) => { e.stopPropagation(); navigate(`/edit/${articleId}`); }}
+            onClick={(e) => { e.stopPropagation(); 
+            setIsOpen(false);  
+            navigate(`/edit/${articleId}`); }}
           >
             Edit article
           </MenuItemButton>
           <MenuItemButton
-            onClick={async (e) => { e.stopPropagation(); await handleDelete(); }}>
+            onClick={async (e) => { e.stopPropagation(); 
+            setIsOpen(false);     
+            await handleDelete(); }}>
             Delete Article
           </MenuItemButton>
 

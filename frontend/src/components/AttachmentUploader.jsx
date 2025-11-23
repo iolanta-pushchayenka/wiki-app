@@ -60,12 +60,13 @@ export default function AttachmentUploader({ articleId, onUploaded }) {
         Click to upload file
         <input
           type="file"
+          accept=".jpg, .jpeg, .png, .pdf"
           style={{ display: "none" }}
           onChange={(e) => setFile(e.target.files[0])}
         />
       </label>
 
-      <p>JPG, PNG, PDF (max size 10MB)</p>
+      <p>JPG, PNG, PDF (max size 10MB!)</p>
 
       <button
         disabled={!file || loading}

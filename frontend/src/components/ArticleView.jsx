@@ -1,5 +1,5 @@
+import {  Link } from "react-router-dom";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
 
 const BackButton = styled(Link)`
   padding: 6px 10px;
@@ -16,21 +16,24 @@ const BackButton = styled(Link)`
   }
 `;
 
-function ArticleView({ article }) {
+export default function ArticleView({ article }) {
+
   if (!article) return <p>Loading...</p>;
 
   return (
     <>
-    <BackButton to="/"> ← Back to list </BackButton>
-      <h2>{article.title}</h2>
+      <BackButton to="/"> ← Back to workspaces </BackButton>
 
-      <div dangerouslySetInnerHTML={{ __html: article.content }} />
+      <h2 style={{ marginLeft: "25px" }}>{article.title}</h2>
 
-      <small>
+      <div
+        style={{ margin: "25px", marginTop: "10px" }}
+        dangerouslySetInnerHTML={{ __html: article.content }}
+      />
+
+      <small style={{ marginLeft: "25px", color: "#666" }}>
         Created: {new Date(article.createdAt).toLocaleString()}
       </small>
-  </>
+    </>
   );
 }
-
-export default ArticleView;

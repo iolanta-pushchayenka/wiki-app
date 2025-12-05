@@ -5,23 +5,17 @@ import "react-quill/dist/quill.snow.css";
 import styled from "styled-components";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { useParams, useSearchParams, Link } from "react-router-dom";
 
 const Button = styled.button`
-background-color: #AFEEEE;
+  background-color: #AFEEEE;
   border: none;
   border-radius: 5px;
   padding: 10px 20px;
   color: black;
   font-size: 16px;
   cursor: pointer;
-  transition: transform 0.2s ease;
   margin-top: 20px;
-
-  &:hover {
-    transform: scale(1.05);
-    background-color: #AFEEEE;
-  }
 `;
 
 const FormWrapper = styled.div`
@@ -29,85 +23,85 @@ const FormWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  max-width: 800px;
-  margin-top: -605px;
-  margin-left: 250px;
+  width: 100%;
+  margin-top: 40px;
+`;
+
+const FormContainer = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 600px;
+`;
+
+
+const BackButton = styled(Link)`
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-decoration: none;
+  color: black;
+  font-size: 14px;
+  width: 10%;
+  margin-left: 25px;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
 `;
 
 const Input = styled.input`
   border: 2px solid #AFEEEE;
   border-radius: 5px;
-  padding: 5px;
-  width: 20%;
-  font-size: 15px;
+  padding: 10px;
+  width: 50%;
+  font-size: 16px;
   margin-bottom: 20px;
-
-  &:focus {
-    outline: none;
-    border-color: #AFEEEE;  
-  }
 `;
-
-const Title = styled.h2`
-  margin-bottom: 20px;
-  color: #333;
-`;
-
-
-
-const modules = {
-  toolbar: [
-    [{ 'font': [] }],
-    [{ 'header': [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    [{ 'indent': '-1' }, { 'indent': '+1' }],
-    [{ 'color': [] }, { 'background': [] }],
-    ['link', 'image', 'video'],
-    ['clean']
-  ]
-}
 
 function ArticleForm({ onCreated }) {
-  const [title, setTitle] = useState("");
+  const { wsId } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const defaultTitle = searchParams.get("title") || "";
+
+  const [title, setTitle] = useState(defaultTitle);
   const [content, setContent] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const toastId = useRef(null);
-
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setLoading(true);
 
-
-    const plainContent = content.replace(/<[^>]*>/g, '').trim();
+    const plainContent = content.replace(/<[^>]*>/g, "").trim();
 
     if (!title.trim() || !plainContent) {
-      if (!toast.isActive(toastId.current)) {
-        toastId.current = toast.error(
-         "Please fill in the title and content of the article",
-          { autoClose: 4000 }
-        );
-      }
+      toast.error("Please fill the title and content");
       setIsSubmitting(false);
       setLoading(false);
       return;
     }
 
     try {
-      const res = await axios.post("http://localhost:3000/articles", {
-        title: title.trim(),
-        content
-      });
+      const res = await axios.post(
+        `http://localhost:3000/workspaces/${wsId}/articles`,
+        {
+          title: title.trim(),
+          content
+        }
+      );
 
-      toast.success("Your article has been successfully created! 🎊");
+      toast.success("Article created!");
+
       setTitle("");
       setContent("");
-      if (onCreated) onCreated(res.data);
 
+      if (onCreated) onCreated(res.data);
     } catch (err) {
       console.error(err);
       toast.error("Error when saving");
@@ -117,35 +111,43 @@ function ArticleForm({ onCreated }) {
     }
   };
 
-
+   
   return (
     <>
+
+      <BackButton to="/"> ← Back to workspaces </BackButton>
+
       <FormWrapper>
-        <Title>Create your article</Title>
-        <form onSubmit={handleSubmit} >
+        <h2>Create your article</h2>
 
-          <Input type="text" placeholder="Enter your title..." name="title" value={title}
-            onChange={(e) => setTitle(e.target.value)} />
-
-          <ReactQuill value={content}
-            onChange={setContent}
-            modules={modules}
-            style={{ height: "300px", marginBottom: "60px" }}
+        <FormContainer onSubmit={handleSubmit}>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter title..."
           />
+
+          <ReactQuill
+            value={content}
+            onChange={setContent}
+            style={{
+              height: "350px",
+              marginBottom: "60px",
+              width: "100%"
+            }}
+          />
+
+        
 
           <Button type="submit" disabled={isSubmitting}>
             {loading ? "Saving..." : "Add Article"}
           </Button>
-        </form>
+        </FormContainer>
       </FormWrapper>
 
-      <ToastContainer
-        position="top-center"
-        autoClose={4000} 
-      />
+      <ToastContainer position="top-center" autoClose={3000} />
     </>
   );
 }
 
 export default ArticleForm;
-

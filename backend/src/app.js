@@ -4,6 +4,9 @@ import { UPLOADS_DIR } from "./config.js";
 
 import articlesRouter from "./routes/articles.js";
 import attachmentsRouter from "./routes/attachments.js";
+import commentsRouter from "./routes/comments.js";
+import workspacesRouter from "./routes/workspaces.js";
+
 
 export const app = express();
 
@@ -17,3 +20,5 @@ app.get("/", (req, res) => {
 
 app.use("/articles", articlesRouter);
 app.use("/articles", attachmentsRouter);
+app.use("/articles", commentsRouter);
+app.use("/workspaces", workspacesRouter);

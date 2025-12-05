@@ -1,4 +1,3 @@
-import React from "react";
 import AttachmentUploader from '../components/AttachmentUploader';
 import AttachmentList from '../components/AttachmentList';
 import styled from "styled-components";
@@ -28,8 +27,8 @@ export default function AttachPage({ article, setArticle, id }) {
 
   return (
     <Wrapper>
-      <AttachmentUploader 
-        articleId={id} 
+      <AttachmentUploader
+        articleId={id}
         onUploaded={handleAttachmentAdded}
       />
 

@@ -10,7 +10,7 @@ import { ToastContainer } from "react-toastify";
 const MenuButton = styled.button`
   color: white;
   padding: 8px 10px;
-  border-color: #AFEEEE;
+  border-color: #f8f9fa;
   border-radius: 5px;
   cursor: pointer;
   background: transparent;
@@ -46,10 +46,11 @@ const MenuItemButton = styled.button`
   }
 `;
 
-export default function ArticleMenu({ articleId, onDelete }) {
+export default function ArticleMenu({ articleId, wsId, onDelete }) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef(null);
+  
 
   useEffect(() => {
     const closeMenu = (e) => {
@@ -88,7 +89,7 @@ export default function ArticleMenu({ articleId, onDelete }) {
           <MenuItemButton
             onClick={(e) => { e.stopPropagation(); 
             setIsOpen(false);  
-            navigate(`/edit/${articleId}`); }}
+            navigate(`/workspace/${wsId}/article/${articleId}/edit`); }}
           >
             Edit article
           </MenuItemButton>

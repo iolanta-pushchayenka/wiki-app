@@ -4,143 +4,138 @@ import { DATA_DIR } from "../config.js";
 import { makeSafeFilename } from "../utils/safeFileName.js";
 import { sendNotification } from "../utils/websocket.js";
 
+import db from "../../models/index.js";
+const { Article } = db;
+
+
 // GET all articles
 export async function getArticles(req, res) {
     try {
-        await fs.mkdir(DATA_DIR, { recursive: true });
-        const fileNames = await fs.readdir(DATA_DIR);
+        const { workspaceId, limit, offset } = req.query;
 
-        const jsonFiles = fileNames.filter((f) => f.endsWith(".json"));
-
-        const articles = [];
-        for (const file of jsonFiles) {
-            const filePath = path.join(DATA_DIR, file);
-            try {
-                const content = await fs.readFile(filePath, "utf8");
-                const parsed = JSON.parse(content);
-
-                articles.push({
-                    id: path.basename(file, ".json"),
-                    title: parsed.title,
-                    createdAt: parsed.createdAt,
-                });
-            } catch { }
+        const where = {};
+        if (workspaceId) {
+            where.workspaceId = Number(workspaceId);
         }
 
+        const queryOptions = {
+            where,
+            attributes: ['id', 'title', 'content', 'createdAt', 'updatedAt', 'workspaceId'],
+            order: [['createdAt', 'DESC']]
+        };
+
+        if (limit) queryOptions.limit = Number(limit);
+        if (offset) queryOptions.offset = Number(offset);
+
+        const articles = await Article.findAll(queryOptions);
+
         res.json(articles);
-    } catch {
-        res.status(500).json({ error: "Failed to read articles" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch articles' });
     }
 }
 
-// GET by ID
+
+// GET article by id 
 export async function getArticleById(req, res) {
     try {
-        const id = req.params.id;
-        const filePath = path.join(DATA_DIR, `${id}.json`);
+        const id = req.params.id
 
-        const raw = await fs.readFile(filePath, "utf8");
-        const parsed = JSON.parse(raw);
+        const article = await Article.findByPk(id, {
+    include: [{
+        model: db.Comment,
+        as: "Comments",
+        attributes: ["id", "content", "createdAt", "updatedAt"]
+    }]
+});
 
-        res.json({ id, ...parsed });
+        if (!article) {
+            return res.status(404).json({ error: 'Article not found' });
+        }
+
+        res.json(article);
     } catch (err) {
-        if (err.code === "ENOENT")
-            return res.status(404).json({ error: "Article not found" });
-
-        res.status(500).json({ error: "Failed to read article" });
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch article' });
     }
 }
+
 
 // POST create article
 export async function createArticle(req, res) {
     try {
-        const { title, content } = req.body;
+        const {title, content, workspaceId} = req.body;
 
-        if (!title || !content)
-            return res.status(400).json({ error: "Title and content required" });
+        if (!title || !content || !workspaceId) {
+            return res.status(400).json({error: "Title, content and workspaceId are required"})
+        }
 
-        const safe = makeSafeFilename(title);
-        const filename = `${safe}.json`;
-        const filePath = path.join(DATA_DIR, filename);
+        const attachment = [];
 
-        const article = {
+        const article = await Article.create({
             title,
-            content,
-            createdAt: new Date().toISOString(),
-            attachments: [],
-        };
-
-        await fs.writeFile(filePath, JSON.stringify(article, null, 2));
-
-        res.status(201).json({
-            id: safe,
-            ...article,
+            content, 
+            attachment,
+            workspaceId
         });
-    } catch {
-        res.status(500).json({ error: "Failed to save article" });
+
+        res.status(201).json(article);
+    } catch (err){ 
+        console.log(err);
+        res.status(500).json({ error: "Failed to create article" });
     }
 }
+
 
 // DELETE article
 export async function deleteArticle(req, res) {
     try {
         const id = req.params.id;
-        const filePath = path.join(DATA_DIR, `${id}.json`);
 
-        const raw = await fs.readFile(filePath, "utf8");
-        const article = JSON.parse(raw);
-
-        const attachments = article.attachments || [];
-
-        // delete files
-        for (const att of attachments) {
-            const attPath = path.join("uploads", att.filename);
-            await fs.unlink(attPath).catch(() => { });
+        const article = await Article.findByPk(id);
+        if (!article) {
+            return res.status(404).json({error: "Article not found"});
         }
 
-        await fs.unlink(filePath);
+          // Удаляем статью
+        await article.destroy();
 
-        res.json({
-            message: "Article and attachments deleted",
-            deletedAttachments: attachments.length,
-        });
+        return res.json({ message: "Article deleted successfully" });
+
     } catch (err) {
-        if (err.code === "ENOENT")
-            return res.status(404).json({ error: "Article not found" });
-
+        console.log(err);
         res.status(500).json({ error: "Delete error" });
     }
 }
+
 
 // PUT update
 export async function updateArticle(req, res) {
     try {
         const id = req.params.id;
-        const filePath = path.join(DATA_DIR, `${id}.json`);
+        const {title, content} = req.body;
 
-        const raw = await fs.readFile(filePath, "utf8");
-        const article = JSON.parse(raw);
+        if (!title || !content) {
+            return res.status(400).json({error: "Missing fields"});
+        }
 
-        const { title, content } = req.body;
-        if (!title || !content)
-            return res.status(400).json({ error: "Missing fields" });
+        const article = await Article.findByPk(id);
+        if (!article) {
+            return res.status(404).json({error: "Article not found"});
+        }
 
-        const updated = {
-            ...article,
-            title,
-            content,
-            updatedAt: new Date().toISOString(),
-        };
+        article.title = title;
+        article.content = content;
+        article.updatedAt = new Date();
 
-        await fs.writeFile(filePath, JSON.stringify(updated, null, 2));
+        await article.save();
 
         sendNotification(`Article "${title}" updated`);
 
-        res.json(updated);
+        return res.json(article);
     } catch (err) {
-        if (err.code === "ENOENT")
-            return res.status(404).json({ error: "Not found" });
-
+        console.log(err)
         res.status(500).json({ error: "Update error" });
     }
-}
+};

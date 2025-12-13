@@ -9,7 +9,7 @@ module.exports = {
           type: Sequelize.INTEGER,
           autoIncrement: true,
           primaryKey: true,
-          allowNull: false
+          allowNull: false 
         },
 
         title: {
@@ -18,7 +18,7 @@ module.exports = {
         },
 
         content: {
-          type: Sequelize.TEXT,
+          type: Sequelize.TEXT, 
           allowNull: false
         },
 

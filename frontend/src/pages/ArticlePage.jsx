@@ -9,52 +9,36 @@ import NotificationToast from '../components/NotificationToast';
 import CommentsAccordion from '../components/CommentsAccordion';
 
 const Box = styled.div`
-display: flex;
-flex-direction: column;
-gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `;
 
-
-
-//   const { id } = useParams();
-//   const [article, setArticle] = useState(null);
-
-//   useEffect(() => {
-//     axios.get(`http://localhost:3000/articles/${id}`)
-//       .then(res => setArticle(res.data))
-//       .catch(err => console.error(err));
-//   }, [id]);
-
-//   const { wsId, articleId } = useParams();
-
-
-// useEffect(() => {
-//   axios.get(`http://localhost:3000/workspaces/${wsId}/articles/${articleId}`)
-//     .then(res => setArticle(res.data))
-//     .catch(err => console.error(err));
-// }, [wsId, articleId]);
-
 const ArticlePage = () => {
-
   const { wsId, articleId } = useParams();
   const [article, setArticle] = useState(null);
 
-  useEffect(() => {
-    axios.get(`http://localhost:3000/workspaces/${wsId}/articles/${articleId}`)
-      .then(res => setArticle(res.data))
-      .catch(err => console.error(err));
-  }, [wsId, articleId]);
+useEffect(() => {
+  axios.get(`http://localhost:3000/articles/${articleId}`)
+    .then(res => setArticle(res.data))
+    .catch(err => console.error(err));
+}, [articleId]);
+
 
   if (!article) return <p>Loading...</p>;
 
-  const attachments = article.attachments || [];
+  const latestVersion = article.latestVersion;
+  if (!latestVersion) return <p>No versions found</p>;
+
+  const attachments = latestVersion.attachments || [];
 
   return (
     <>
       <NotificationToast />
       <Header />
+
       <Box>
-        <ArticleView article={article} />
+        <ArticleView articleVersion={latestVersion} />
 
         <AttachmentList
           articleId={articleId}
@@ -65,7 +49,7 @@ const ArticlePage = () => {
 
         <CommentsAccordion
           articleId={article.id}
-          comments={article.comments || []}
+          comments={article.Comments || []}
         />
       </Box>
     </>

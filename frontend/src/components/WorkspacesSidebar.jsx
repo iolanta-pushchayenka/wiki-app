@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import ArticleMenu from "./ArticleMenu";
 
-
 const Layout = styled.div`
   display: flex;
   height: 100vh;
@@ -30,7 +29,6 @@ const WorkspaceItemWrapper = styled.div`
   margin-bottom: 10px;
 `;
 
-
 const DeleteWorkspaceButton = styled.button`
   position: absolute;
   top: 4px;
@@ -46,41 +44,42 @@ const DeleteWorkspaceButton = styled.button`
     color: red;
   }
 `;
-
 const WorkspaceCreateButton = styled.button`
   width: 100%;
   padding: 10px;
   margin-top: 10px;
-  background: #4dabf7;
-  border: none;
+  background-color: #AFEEEE;
+  border: 1px solid #8fdede;
   border-radius: 6px;
-  color: white;
+  color: #222;
   cursor: pointer;
   font-size: 15px;
   transition: 0.2s;
 
   &:hover {
-    background-color: #339af0;
+    background-color: #9FE3E3;
   }
 `;
+
 
 const ContentCreateButton = styled.button`
-  display: block;
   width: 28%;
   padding: 10px;
+  display: block;
   margin-top: 10px;
-  background: #4dabf7;
-  border: none;
+  background-color: #AFEEEE;
+  border: 1px solid #8fdede;
   border-radius: 6px;
-  color: white;
+  color: #222;
   cursor: pointer;
   font-size: 15px;
   transition: 0.2s;
 
   &:hover {
-    background-color: #339af0;
+    background-color: #9FE3E3;
   }
 `;
+
 
 const Content = styled.div`
   flex: 1;
@@ -92,36 +91,36 @@ const SectionTitle = styled.h1`
   color: #333;
 `;
 
-const ArticleItem = styled.div`
-  display: flex;           // делаем flex-контейнер
-  justify-content: space-between; // название слева, меню справа
-  align-items: center;     // выравнивание по вертикали
-  background: #fff;
-  border: 1px solid #dee2e6;
-  padding: 14px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: 0.2s;
-
-  &:hover {
-    background: #f1f3f5;
-  }
+const ArticleItem = styled.div `
+display: flex; 
+justify-content: space-between; 
+align-items: center; 
+background: #fff; 
+border: 1px solid #dee2e6; 
+padding: 14px; 
+border-radius: 8px; 
+margin-bottom: 12px; 
+cursor: pointer; 
+transition: 0.2s; 
+&:hover { background: #f1f3f5; } 
 `;
+
 const WorkspaceItem = styled.div`
   padding: 12px 14px;
   border-radius: 8px;
-  background: ${({ active }) => (active ? "#4dabf7" : "#f1f3f5")};
-  color: ${({ active }) => (active ? "#fff" : "#222")};
+  background-color: ${({ active }) =>
+    active ? "#AFEEEE" : "#f1f3f5"};
+  color: #222;
   cursor: pointer;
   font-weight: 500;
   transition: 0.2s;
+  border: 1px solid #ccc;
 
   &:hover {
-    background: ${({ active }) => (active ? "#339af0" : "#e9ecef")};
+    background-color: ${({ active }) =>
+      active ? "#9FE3E3" : "#e9ecef"};
   }
 `;
-
 
 
 const WorkspaceInput = styled.input`
@@ -140,7 +139,6 @@ const ContentInput = styled.input`
   margin-bottom: 10px;
 `;
 
-// -----------------------------
 export default function WorkspacesSidebar() {
   const [workspaces, setWorkspaces] = useState([]);
   const [articles, setArticles] = useState([]);
@@ -162,7 +160,13 @@ export default function WorkspacesSidebar() {
   async function loadArticles(id) {
     const res = await fetch(`http://localhost:3000/workspaces/${id}/articles`);
     const data = await res.json();
-    setArticles(data);
+
+    const articlesWithLatest = data.map(a => ({
+      ...a,
+      latestVersion: a.ArticleVersions?.[0] || null
+    }));
+
+    setArticles(articlesWithLatest);
   }
 
   useEffect(() => {
@@ -183,7 +187,6 @@ export default function WorkspacesSidebar() {
 
     const ws = await res.json();
     setWorkspaces(prev => [...prev, ws]);
-
     setNewWsName("");
   }
 
@@ -201,34 +204,10 @@ export default function WorkspacesSidebar() {
     }
   }
 
-  // Create Article
-  async function createArticle() {
-    if (!selectedWs) return;
-    if (!newArticleTitle.trim()) return;
 
-    const res = await fetch(
-      `http://localhost:3000/workspaces/${selectedWs.id}/articles`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newArticleTitle,
-          content: ""
-        })
-      }
-    );
-
-    if (!res.ok) return alert("Ошибка при создании статьи");
-
-    const article = await res.json();
-    setArticles(prev => [...prev, article]);
-
-    setNewArticleTitle("");
-  }
 
   return (
     <Layout>
-      {/* SIDEBAR */}
       <Sidebar>
         <SidebarTitle>Workspaces</SidebarTitle>
 
@@ -258,7 +237,6 @@ export default function WorkspacesSidebar() {
         </WorkspaceCreateButton>
       </Sidebar>
 
-      {/* CONTENT */}
       <Content>
         {!selectedWs && <h2>Выберите workspace</h2>}
 
@@ -267,13 +245,11 @@ export default function WorkspacesSidebar() {
             <SectionTitle>{selectedWs.name}</SectionTitle>
 
             <h3>Создать статью</h3>
-
             <ContentInput
               placeholder="Название статьи..."
               value={newArticleTitle}
               onChange={e => setNewArticleTitle(e.target.value)}
             />
-
             <ContentCreateButton
               onClick={() =>
                 navigate(
@@ -284,9 +260,7 @@ export default function WorkspacesSidebar() {
               + Создать статью
             </ContentCreateButton>
 
-
             <h2 style={{ marginTop: "30px" }}>Статьи</h2>
-
             {articles.length === 0 && <p>В этом workspace пока нет статей</p>}
 
             {articles.map(a => (
@@ -294,14 +268,13 @@ export default function WorkspacesSidebar() {
                 key={a.id}
                 onClick={() => navigate(`/workspace/${selectedWs.id}/article/${a.id}`)}
               >
-                {a.title}
+                {a.latestVersion?.title || "Без заголовка"}
 
                 <ArticleMenu
                   articleId={a.id}
                   wsId={selectedWs.id}
                   onDelete={(deletedId) => setArticles(prev => prev.filter(x => x.id !== deletedId))}
                 />
-
               </ArticleItem>
             ))}
           </>
@@ -310,3 +283,12 @@ export default function WorkspacesSidebar() {
     </Layout>
   );
 }
+
+
+
+
+
+
+
+
+

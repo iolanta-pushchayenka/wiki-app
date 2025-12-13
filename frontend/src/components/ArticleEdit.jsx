@@ -1,5 +1,3 @@
-
-
 // import React, { useEffect, useState } from "react";
 // import axios from "axios";
 // import { useParams, useNavigate, Link } from "react-router-dom";
@@ -9,6 +7,8 @@
 // import { toast, ToastContainer } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
 
+// import AttachmentUploader from "../components/AttachmentUploader";
+// import AttachmentList from "../components/AttachmentList";
 
 
 // const BackButton = styled(Link)`
@@ -31,10 +31,9 @@
 //   flex-direction: column;
 //   align-items: center;
 //   padding: 40px;
-//   max-width: 800px;
-//   margin: 0 auto; /* по центру страницы */
+//   max-width: 900px;
+//   margin: 0 auto;
 // `;
-
 
 // const Title = styled.h2`
 //   margin-bottom: 20px;
@@ -45,13 +44,13 @@
 //   border: 2px solid #AFEEEE;
 //   border-radius: 5px;
 //   padding: 5px;
-//   width: 20%;
+//   width: 40%;
 //   font-size: 15px;
 //   margin-bottom: 20px;
 // `;
 
 // const Button = styled.button`
-//  background-color: #AFEEEE;
+//   background-color: #AFEEEE;
 //   border: none;
 //   border-radius: 5px;
 //   padding: 10px 20px;
@@ -59,21 +58,21 @@
 //   font-size: 16px;
 //   cursor: pointer;
 //   margin-top: 20px;
-//   margin-right: 550px;
 // `;
 
-// const modules = {
-//   toolbar: [
-//     [{ 'font': [] }],
-//     [{ 'header': [1, 2, 3, false] }],
-//     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-//     [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-//     [{ 'indent': '-1' }, { 'indent': '+1' }],
-//     [{ 'color': [] }, { 'background': [] }],
-//     ['link', 'image', 'video'],
-//     ['clean']
-//   ]
-// };
+// const AttachmentsWrapper = styled.div`
+//   margin-top: 50px;
+//   width: 100%;
+//   display: flex;
+//   justify-content: space-between;
+//   gap: 40px;
+// `;
+
+// const Column = styled.div`
+//   flex: 1;
+//   max-width: 50%;
+// `;
+
 
 // export default function ArticleEdit() {
 //   const { wsId, articleId } = useParams();
@@ -81,9 +80,9 @@
 
 //   const [title, setTitle] = useState("");
 //   const [content, setContent] = useState("");
+//   const [attachments, setAttachments] = useState([]);
 //   const [loading, setLoading] = useState(true);
 
-//   // ⭐ NEW — load article on mount
 //   useEffect(() => {
 //     async function loadArticle() {
 //       try {
@@ -93,8 +92,9 @@
 
 //         setTitle(res.data.title);
 //         setContent(res.data.content);
-//         setLoading(false);
+//         setAttachments(res.data.attachments || []);
 
+//         setLoading(false);
 //       } catch (err) {
 //         toast.error("Failed to load article");
 //         console.error(err);
@@ -114,29 +114,34 @@
 //       );
 
 //       toast.success("Article updated!");
-//       // setTimeout(() => navigate(`/workspaces/${wsId}`), 1200);
 
 //     } catch (err) {
 //       toast.error("Error updating article");
-//       console.log(err);
+//       console.error(err);
 //     }
+//   };
+
+//   const handleAttachmentAdded = (attachment) => {
+//     setAttachments((prev) => [...prev, attachment]);
+//   };
+
+//   const handleAttachmentDeleted = (attachmentId) => {
+//     setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
 //   };
 
 //   if (loading) {
 //     return (
 //       <p style={{ textAlign: "center", marginTop: "100px" }}>
-//         Uploading an article...
+//         Loading article...
 //       </p>
 //     );
 //   }
 
 //   return (
 //     <>
-
-//     <BackButton to="/"> ← Back to workspaces </BackButton>
+//       <BackButton to="/"> ← Back to workspaces </BackButton>
 
 //       <Container>
-
 //         <Title>Edit Article</Title>
 
 //         <form onSubmit={handleUpdate} style={{ width: "100%" }}>
@@ -150,18 +155,39 @@
 //           <ReactQuill
 //             value={content}
 //             onChange={setContent}
-//             modules={modules}
 //             style={{ height: "300px", marginBottom: "60px" }}
 //           />
 
+//           <AttachmentsWrapper>
+
+//             <Column>
+//               <AttachmentUploader
+//                 articleId={articleId}
+//                 onUploaded={handleAttachmentAdded}
+//               />
+//             </Column>
+
+//             <Column>
+//               <AttachmentList
+//                 articleId={articleId}
+//                 attachments={attachments}
+//                 onDelete={handleAttachmentDeleted}
+//               />
+//             </Column>
+
+//           </AttachmentsWrapper>
+
 //           <Button type="submit">Save</Button>
 //         </form>
+
+
 //       </Container>
 
 //       <ToastContainer position="top-center" autoClose={3000} />
 //     </>
 //   );
 // }
+
 
 
 import React, { useEffect, useState } from "react";
@@ -175,8 +201,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 import AttachmentUploader from "../components/AttachmentUploader";
 import AttachmentList from "../components/AttachmentList";
-
-// ---------- STYLES ----------
 
 const BackButton = styled(Link)`
   padding: 6px 10px;
@@ -240,8 +264,6 @@ const Column = styled.div`
   max-width: 50%;
 `;
 
-// -----------------------------------
-
 export default function ArticleEdit() {
   const { wsId, articleId } = useParams();
   const navigate = useNavigate();
@@ -251,7 +273,9 @@ export default function ArticleEdit() {
   const [attachments, setAttachments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load article on mount
+  // -----------------------------
+  //   LOAD ARTICLE + LAST VERSION
+  // -----------------------------
   useEffect(() => {
     async function loadArticle() {
       try {
@@ -259,9 +283,16 @@ export default function ArticleEdit() {
           `http://localhost:3000/workspaces/${wsId}/articles/${articleId}`
         );
 
-        setTitle(res.data.title);
-        setContent(res.data.content);
-        setAttachments(res.data.attachments || []);
+        const version = res.data.latestVersion;
+
+        if (!version) {
+          toast.error("No versions found");
+          return;
+        }
+
+        setTitle(version.title);
+        setContent(version.content);
+        setAttachments(version.attachments || []);
 
         setLoading(false);
       } catch (err) {
@@ -273,30 +304,39 @@ export default function ArticleEdit() {
     loadArticle();
   }, [wsId, articleId]);
 
-  // Save article changes
+  // -----------------------------
+  //         SAVE AS NEW VERSION
+  // -----------------------------
   const handleUpdate = async (e) => {
     e.preventDefault();
 
     try {
-      await axios.put(
+      const res = await axios.put(
         `http://localhost:3000/workspaces/${wsId}/articles/${articleId}`,
-        { title, content }
+        { title, content, attachments }
       );
 
-      toast.success("Article updated!");
+      const { version } = res.data;
 
+      setTitle(version.title);
+      setContent(version.content);
+      setAttachments(version.attachments || []);
+
+      toast.success("New version saved!");
     } catch (err) {
       toast.error("Error updating article");
       console.error(err);
     }
   };
 
-  // Add attachment to list after upload
+
+  // -----------------------------
+  //           ATTACHMENTS
+  // -----------------------------
   const handleAttachmentAdded = (attachment) => {
     setAttachments((prev) => [...prev, attachment]);
   };
 
-  // Remove attachment from list
   const handleAttachmentDeleted = (attachmentId) => {
     setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
   };
@@ -330,29 +370,25 @@ export default function ArticleEdit() {
             style={{ height: "300px", marginBottom: "60px" }}
           />
 
-  <AttachmentsWrapper>
+          <AttachmentsWrapper>
+            <Column>
+              <AttachmentUploader
+                articleId={articleId}
+                onUploaded={handleAttachmentAdded}
+              />
+            </Column>
 
-          <Column>
-            <AttachmentUploader
-              articleId={articleId}
-              onUploaded={handleAttachmentAdded}
-            />
-          </Column>
+            <Column>
+              <AttachmentList
+                articleId={articleId}
+                attachments={attachments}
+                onDelete={handleAttachmentDeleted}
+              />
+            </Column>
+          </AttachmentsWrapper>
 
-          <Column>
-            <AttachmentList
-              articleId={articleId}
-              attachments={attachments}
-              onDelete={handleAttachmentDeleted}
-            />
-          </Column>
-
-        </AttachmentsWrapper>
-        
           <Button type="submit">Save</Button>
         </form>
-
-      
       </Container>
 
       <ToastContainer position="top-center" autoClose={3000} />

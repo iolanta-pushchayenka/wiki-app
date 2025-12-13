@@ -1,26 +1,14 @@
-import fs from "fs/promises";
-import path from "path";
-import { DATA_DIR, UPLOADS_DIR } from "../config.js";
-import { sendNotification } from "../utils/websocket.js";
-
 
 import db from "../../models/index.js";
-const { Article } = db;
+import fs from "fs/promises";
+import path from "path";
+const { ArticleVersion } = db;
 
-
-//Upload file for article 
+// UPLOAD attachment
 export async function uploadAttachment(req, res) {
     try {
-        const { id } = req.params;
         const file = req.file;
-
-        if (!file)
-            return res.status(400).json({ error: "The file has not been uploaded" });
-
-        const article = await Article.findByPk(id);
-
-        if(!article)
-            return res.status(404).json({error: "Article not found"});
+        if (!file) return res.status(400).json({ error: "No file uploaded" });
 
         const attachment = {
             id: `${Date.now()}-${Math.random()}`,
@@ -29,59 +17,38 @@ export async function uploadAttachment(req, res) {
             mimeType: file.mimetype,
             size: file.size,
             url: `/uploads/${file.filename}`,
-            uploadedAt: new Date().toISOString(),
+            uploadedAt: new Date().toISOString()
         };
 
-       // добавляем вложение в JSONB массив
-        const updated = [...article.attachments, attachment];
-
-        article.attachments = updated;
-        await article.save();
-
-        sendNotification(`New attachment added`);
-
-        res.status(201).json({ message: "Attachment uploaded", attachment });
-
+        res.status(201).json({ attachment });
     } catch (err) {
-        return res.status(500).json({ error: "Upload failed" });
+        console.error(err);
+        res.status(500).json({ error: "Upload failed" });
     }
 }
 
-
-//delete file from article 
+// DELETE attachment 
 export async function deleteAttachment(req, res) {
     try {
         const { id, attachmentId } = req.params;
 
-        const article = await Article.findByPk(id);
-        if (!article) {
-            return res.status(404).json({error: "Article not found"});
-        }
-            
-        // Ищем вложение в JSONB массиве
-        const attachments = article.attachments || [];
-        const index = attachments.findIndex(a => a.id === attachmentId);
+        const lastVersion = await ArticleVersion.findOne({
+            where: { articleId: id },
+            order: [["versionNumber", "DESC"]],
+        });
+        if (!lastVersion) return res.status(404).json({ error: "Article version not found" });
 
-        if (index === -1) {
-            return res.status(404).json({ error: "Attachment not found" });
-        }
+        const attachmentsCopy = (lastVersion.attachments || []).map(att => ({ ...att }));
+        const index = attachmentsCopy.findIndex(a => String(a.id) === String(attachmentId));
+        if (index === -1) return res.status(404).json({ error: "Attachment not found" });
 
-        const att = attachments[index];
+        const att = attachmentsCopy[index];
+        await fs.unlink(path.join(process.cwd(), "uploads", att.filename)).catch(() => { });
+        attachmentsCopy.splice(index, 1);
 
-        // Удаляем файл с диска
-        const filePath = path.join("uploads", att.filename);
-        await fs.unlink(filePath).catch(() => { });
-
-        //Удаляем вложение из массива
-        const updated = attachments.filter(a => a.id !== attachmentId);
-
-        article.attachments = updated;
-        await article.save();
-
-        sendNotification(`Attachment deleted`);
-
-        res.json({ message: "Deleted" });
+        return res.json({ message: "Attachment removed", attachments: attachmentsCopy });
     } catch (err) {
-        res.status(500).json({ error: "Delete failed" });
+        console.error(err);
+        return res.status(500).json({ error: "Delete failed" });
     }
 }

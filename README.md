@@ -66,10 +66,6 @@ npm install
 
 # 2. Создать файл окружения .env
 
-# Проект уже содержит .env.example. Создай рабочий .env командой:
-
-cp .env.example .env
-
 # Открой .env и заполни параметры:
 
 DB_HOST=localhost
@@ -86,11 +82,8 @@ npx sequelize-cli db:create
 
 npx sequelize-cli db:migrate
 
-# После этого будут созданы таблицы:
+# После этого будут созданы таблицы
 
-Articles
-
-SequelizeMeta
 
 # Проверить можно в psql:
 

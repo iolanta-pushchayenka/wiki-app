@@ -62,7 +62,7 @@ export async function createArticle(req, res) {
             return res.status(400).json({ error: "Title, content and workspaceId are required" });
         }
 
-        const article = await Article.create({ title, workspaceId });
+        const article = await Article.create({  workspaceId });
         const version = await ArticleVersion.create({
             articleId: article.id,
             title,
@@ -107,11 +107,9 @@ export async function updateArticle(req, res) {
         });
         if (!lastVersion) return res.status(404).json({ error: "Article version not found" });
 
-
         const newTitle = title !== undefined ? title : lastVersion.title;
         const newContent = content !== undefined ? content : lastVersion.content;
         const newAttachments = attachments !== undefined ? attachments : lastVersion.attachments;
-
 
         const isChanged =
             newTitle !== lastVersion.title ||
@@ -121,7 +119,6 @@ export async function updateArticle(req, res) {
         if (!isChanged) {
             return res.json({ message: "No changes detected", version: lastVersion });
         }
-
 
         const newVersion = await ArticleVersion.create({
             articleId: id,
@@ -136,7 +133,8 @@ export async function updateArticle(req, res) {
         console.error(err);
         return res.status(500).json({ error: "Failed to update article" });
     }
-}
+};
+
 
 
 

@@ -1,4 +1,3 @@
-
 import db from "../../models/index.js";
 import fs from "fs/promises";
 import path from "path";
@@ -43,10 +42,21 @@ export async function deleteAttachment(req, res) {
         if (index === -1) return res.status(404).json({ error: "Attachment not found" });
 
         const att = attachmentsCopy[index];
-        await fs.unlink(path.join(process.cwd(), "uploads", att.filename)).catch(() => { });
         attachmentsCopy.splice(index, 1);
 
-        return res.json({ message: "Attachment removed", attachments: attachmentsCopy });
+        const otherVersions = await ArticleVersion.findAll({
+            where: { articleId: id },
+        });
+        const isUsedElsewhere = otherVersions.some(v =>
+            v.attachments?.some(a => a.filename === att.filename)
+        );
+
+        if (!isUsedElsewhere) {
+            await fs.unlink(path.join(process.cwd(), "uploads", att.filename)).catch(() => {});
+        }
+
+        return res.json({ message: "Attachment deleted", attachments: attachmentsCopy });
+
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: "Delete failed" });

@@ -70,7 +70,7 @@ npm install
 
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=wiki_db
+DB_NAME=wiki_db(заменить на свою бд)
 DB_USER=postgres
 DB_PASS=your_password(заменить на свой пароль)
 
@@ -82,13 +82,31 @@ npx sequelize-cli db:create
 
 npx sequelize-cli db:migrate
 
+Если миграция не пройдет и возникнет ошибка при миграции комментариев, попробуйте заменить двойные кавычки (") на одинарные (') в файле миграции, так как это может быть причиной ошибки.
+
 # После этого будут созданы таблицы
 
+  Schema |      Name       | Type  |  Owner
+--------+-----------------+-------+----------
+ public | ArticleVersions | table | postgres
+ public | Articles        | table | postgres
+ public | Comments        | table | postgres
+ public | SequelizeMeta   | table | postgres
+ public | Users           | table | postgres
+ public | Workspaces      | table | postgres
 
 # Проверить можно в psql:
-
 \dt
 
-# Запуск сервера
-npm start
+# Запуск проекта
+
+## Backend 
+cd backend 
+node server.js 
+
+## Frontend 
+cd frontend 
+npm run dev 
+
+
 

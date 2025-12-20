@@ -24,15 +24,10 @@ export default (sequelize) => {
             defaultValue: 1,
             allowNull: false
         }
-        // updatedByUserId: {
-        //     type: DataTypes.INTEGER,
-        //     allowNull: true
-        // }
     });
 
     ArticleVersion.associate = (models) => {
         ArticleVersion.belongsTo(models.Article, { foreignKey: "articleId" });
-
     };
 
     return ArticleVersion;

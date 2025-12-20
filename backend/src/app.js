@@ -6,6 +6,8 @@ import articlesRouter from "./routes/articles.js";
 import attachmentsRouter from "./routes/attachments.js";
 import commentsRouter from "./routes/comments.js";
 import workspacesRouter from "./routes/workspaces.js";
+import authRouter from "./routes/auth.js";
+import logicRouter from "./routes/logic.js";
 
 
 export const app = express();
@@ -24,3 +26,8 @@ app.use("/articles", commentsRouter);
 
 
 app.use("/workspaces", workspacesRouter);
+
+app.use("/auth", authRouter);
+
+app.use("/logic", logicRouter);
+

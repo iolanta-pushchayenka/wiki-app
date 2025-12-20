@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from "axios";
+import api from "../api/axios";
 import ArticleView from '../components/ArticleView';
 import Header from '../components/Header';
 import { useParams } from "react-router-dom";
@@ -19,7 +19,7 @@ const ArticlePage = () => {
   const [article, setArticle] = useState(null);
 
 useEffect(() => {
-  axios.get(`http://localhost:3000/articles/${articleId}`)
+  api.get(`/articles/${articleId}`)
     .then(res => setArticle(res.data))
     .catch(err => console.error(err));
 }, [articleId]);

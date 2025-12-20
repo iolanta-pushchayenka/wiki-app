@@ -10,17 +10,19 @@ import {
     updateWorkspaceArticle
 } from "../controllers/workspacesController.js";
 
+import { authMiddleware } from "../middleware/authMiddleware.js";
+
 const router = Router();
 
-router.get("/", getWorkspaces);
-router.post("/", createWorkspace);
-router.delete("/:id", deleteWorkspace);
-router.get("/:id/articles", getWorkspaceArticles);
-router.post("/:id/articles", createWorkspaceArticle);
+router.get("/", authMiddleware, getWorkspaces);
+router.post("/", authMiddleware,  createWorkspace);
+router.delete("/:id", authMiddleware, deleteWorkspace);
 
-router.get("/:id/articles/:articleId", getWorkspaceArticleById);
-router.put("/:id/articles/:articleId", updateWorkspaceArticle); 
+router.get("/:id/articles", authMiddleware, getWorkspaceArticles);
+router.post("/:id/articles", authMiddleware, createWorkspaceArticle);
+
+router.get("/:id/articles/:articleId", authMiddleware, getWorkspaceArticleById);
+router.put("/:id/articles/:articleId", authMiddleware, updateWorkspaceArticle); 
 
 
 export default router;
- 

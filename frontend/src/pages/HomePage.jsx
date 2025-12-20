@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import WorkspacesSidebar from "../components/WorkspacesSidebar";
 import Header from "../components/Header";
-import axios from "axios";
+import api from "../api/axios";
 import styled from "styled-components"
 import { useNavigate } from "react-router-dom";
 
@@ -37,7 +37,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://localhost:3000/articles")
+    api.get("/articles")
       .then(res => setArticles(res.data))
       .catch(console.error);
   }, []);

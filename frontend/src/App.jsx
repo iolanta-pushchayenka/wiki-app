@@ -10,7 +10,9 @@ import ArticleForm from "./components/ArticleForm";
 import ArticleEdit from "./components/ArticleEdit";
 import VersionsListPage from "./pages/VersionsListPage";
 import VersionViewPage from "./pages/VersionViewPage";
-
+import LoginPage from "./components/LoginPage";
+import RegisterPage from "./components/RegisterPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
 
@@ -18,13 +20,16 @@ function App() {
     <BrowserRouter>
       <NotificationToast />
       <Routes>
-        <Route path='/' element={<HomePage />} />
-        <Route path="/workspace/:wsId/article/:articleId" element={<ArticlePage />} />
-        <Route path='/create' element={<CreatePage />} />
-        <Route path="/workspace/:wsId/article/:articleId/edit" element={<ArticleEdit />} />
-        <Route path="/workspace/:wsId/article/new" element={<ArticleForm />} />
-        <Route path="/workspaces/:wsId/articles/:articleId/versions" element={<VersionsListPage />} />
-        <Route path="/workspaces/:wsId/articles/:articleId/versions/:versionNumber" element={<VersionViewPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        <Route path='/' element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        <Route path="/workspace/:wsId/article/:articleId" element={<ProtectedRoute><ArticlePage /></ProtectedRoute>} />
+        <Route path='/create' element={<ProtectedRoute><CreatePage /></ProtectedRoute>} />
+        <Route path="/workspace/:wsId/article/:articleId/edit" element={<ProtectedRoute><ArticleEdit /></ProtectedRoute>} />
+        <Route path="/workspace/:wsId/article/new" element={<ProtectedRoute><ArticleForm /></ProtectedRoute>} />
+        <Route path="/workspaces/:wsId/articles/:articleId/versions" element={<ProtectedRoute><VersionsListPage /></ProtectedRoute>} />
+        <Route path="/workspaces/:wsId/articles/:articleId/versions/:versionNumber" element={<ProtectedRoute><VersionViewPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import axios from "axios";
+import api from "../api/axios";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
 const MenuButton = styled.button`
   color: black;
@@ -58,7 +59,7 @@ export default function CommentMenu({ commentId, onEdit, onDelete }) {
         if (!window.confirm("Delete this comment?")) return;
 
         try {
-            await axios.delete(`http://localhost:3000/articles/comment/${commentId}`);
+            await api.delete(`/articles/comment/${commentId}`);
             toast.success("Comment deleted!");
 
             if (onDelete) onDelete(commentId);

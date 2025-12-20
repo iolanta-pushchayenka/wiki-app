@@ -58,11 +58,14 @@ export async function getArticleById(req, res) {
 export async function createArticle(req, res) {
     try {
         const { title, content, workspaceId, attachments = [] } = req.body;
+        const userId = req.user.userId;
+
         if (!title || !content || !workspaceId) {
             return res.status(400).json({ error: "Title, content and workspaceId are required" });
         }
 
-        const article = await Article.create({  workspaceId });
+        const article = await Article.create({ workspaceId, userId });
+
         const version = await ArticleVersion.create({
             articleId: article.id,
             title,
@@ -82,8 +85,16 @@ export async function createArticle(req, res) {
 export async function deleteArticle(req, res) {
     try {
         const { id } = req.params;
+
         const article = await Article.findByPk(id);
-        if (!article) return res.status(404).json({ error: "Article not found" });
+        if (!article) {
+            return res.status(404).json({ error: "Article not found" });
+        };
+
+        // проверка прав
+        if (article.userId !== req.user.userId) {
+            return res.status(403).json({ error: "You do not have permission" });
+        }
 
         await ArticleVersion.destroy({ where: { articleId: id } });
         await article.destroy();
@@ -118,6 +129,14 @@ export async function updateArticle(req, res) {
 
         if (!isChanged) {
             return res.json({ message: "No changes detected", version: lastVersion });
+        }
+
+        const article = await Article.findByPk(id);
+        if (!article) return res.status(404).json({ error: "Article not found" });
+
+        // проверка владельца
+        if (article.userId !== req.user.userId) {
+            return res.status(403).json({ error: "You cannot edit this article" });
         }
 
         const newVersion = await ArticleVersion.create({

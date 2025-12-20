@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createComment, getComments, deleteComment, updateComment } from "../controllers/commentController.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
@@ -7,12 +8,12 @@ const router = Router();
 router.get("/:id/comments", getComments);
 
 // PUT update comment 
-router.put("/comment/:commentId", updateComment);
+router.put("/comment/:commentId", authMiddleware, updateComment);
 
 // POST create comment
-router.post("/:id/comments", createComment);
+router.post("/:id/comments", authMiddleware, createComment);
 
 // DELETE comment
-router.delete("/comment/:commentId", deleteComment);
+router.delete("/comment/:commentId", authMiddleware, deleteComment);
 
 export default router;

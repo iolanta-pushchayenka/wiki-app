@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import styled from "styled-components";
 
 const Box = styled.div`
@@ -34,7 +34,7 @@ const CommentForm = ({ articleId }) => {
     const handleSubmit = async () => {
         if (!text.trim()) return;
 
-        await axios.post("http://localhost:3000/comments", {
+        await api.post("/comments", {
             articleId,
             text,
         });

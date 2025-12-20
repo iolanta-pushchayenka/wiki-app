@@ -4,8 +4,9 @@ const { Comment, Article } = db;
 // Create comment
 export async function createComment(req, res) {
     try {
-        const { id } = req.params; // articleId
+        const { id } = req.params; 
         const { content } = req.body;
+        const userId = req.user.userId;
 
         if (!content) {
             return res.status(400).json({ error: "Content is required" });
@@ -18,7 +19,8 @@ export async function createComment(req, res) {
 
         const comment = await Comment.create({
             content,
-            articleId: id
+            articleId: id,
+            userId
         });
 
         return res.status(201).json(comment);
@@ -34,10 +36,16 @@ export async function updateComment(req, res) {
     try {
         const { commentId } = req.params;
         const { content } = req.body;
+        const userId = req.user.userId;
 
         const comment = await Comment.findByPk(commentId);
         if (!comment) {
             return res.status(404).json({ error: "Comment not found" });
+        }
+
+    
+        if (comment.userId !== userId) {
+            return res.status(403).json({ error: "You cannot edit this comment" });
         }
 
         comment.content = content;
@@ -56,7 +64,7 @@ export async function updateComment(req, res) {
 // Get all comments for article
 export async function getComments(req, res) {
     try {
-        const { id } = req.params; // articleId
+        const { id } = req.params; 
 
         const article = await Article.findByPk(id);
         if (!article) {
@@ -81,10 +89,16 @@ export async function getComments(req, res) {
 export async function deleteComment(req, res) {
     try {
         const { commentId } = req.params;
+        const userId = req.user.userId;
 
         const comment = await Comment.findByPk(commentId);
         if (!comment) {
             return res.status(404).json({ error: "Comment not found" });
+        }
+
+        
+        if (comment.userId !== userId) {
+            return res.status(403).json({ error: "You cannot delete this comment" });
         }
 
         await comment.destroy();

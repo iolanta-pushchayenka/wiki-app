@@ -11,11 +11,17 @@ export default (sequelize) => {
         name: {
             type: DataTypes.STRING,
             allowNull: false
-        }
+        },
+
+        userId: {                     
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
     });
 
     Workspace.associate = (models) => {
         Workspace.hasMany(models.Article, { foreignKey: "workspaceId" });
+        Workspace.belongsTo(models.User, { foreignKey: "userId" });
     };
 
     return Workspace;

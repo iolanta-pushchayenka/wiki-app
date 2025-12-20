@@ -1,13 +1,23 @@
 import db from "../../models/index.js";
 import fs from "fs/promises";
 import path from "path";
-const { ArticleVersion } = db;
+const { ArticleVersion, Article } = db;
 
 // UPLOAD attachment
 export async function uploadAttachment(req, res) {
     try {
         const file = req.file;
+        const { id } = req.params;
+
         if (!file) return res.status(400).json({ error: "No file uploaded" });
+
+        const article = await Article.findByPk(id);
+        if (!article) return res.status(404).json({ error: "Article not found" });
+
+        
+        if (article.userId !== req.user.userId) {
+            return res.status(403).json({ error: "You cannot upload attachments to this article" });
+        }
 
         const attachment = {
             id: `${Date.now()}-${Math.random()}`,
@@ -37,6 +47,14 @@ export async function deleteAttachment(req, res) {
         });
         if (!lastVersion) return res.status(404).json({ error: "Article version not found" });
 
+        const article = await Article.findByPk(id);
+        if (!article) return res.status(404).json({ error: "Article not found" });
+
+    
+        if (article.userId !== req.user.userId) {
+            return res.status(403).json({ error: "You cannot delete attachments of this article" });
+        }
+
         const attachmentsCopy = (lastVersion.attachments || []).map(att => ({ ...att }));
         const index = attachmentsCopy.findIndex(a => String(a.id) === String(attachmentId));
         if (index === -1) return res.status(404).json({ error: "Attachment not found" });
@@ -52,7 +70,7 @@ export async function deleteAttachment(req, res) {
         );
 
         if (!isUsedElsewhere) {
-            await fs.unlink(path.join(process.cwd(), "uploads", att.filename)).catch(() => {});
+            await fs.unlink(path.join(process.cwd(), "uploads", att.filename)).catch(() => { });
         }
 
         return res.json({ message: "Attachment deleted", attachments: attachmentsCopy });

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
+
 
 
 const MenuButton = styled.button`
@@ -46,11 +48,17 @@ const MenuItemButton = styled.button`
   }
 `;
 
-export default function ArticleMenu({ articleId, wsId, onDelete }) {
+export default function ArticleMenu({ articleId, wsId, onDelete, articleUserId }) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef(null);
-  
+  const { userId } = useAuth();
+
+  const isOwner = userId === articleUserId;
+
+  if (!isOwner) {
+    return null;
+  }
 
   useEffect(() => {
     const closeMenu = (e) => {
@@ -68,7 +76,7 @@ export default function ArticleMenu({ articleId, wsId, onDelete }) {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:3000/articles/${articleId}`);
+      await api.delete(`/articles/${articleId}`);
       toast.success('Article deleted');
 
       if (onDelete) onDelete(articleId);
@@ -106,3 +114,5 @@ export default function ArticleMenu({ articleId, wsId, onDelete }) {
     </div>
   );
 }
+
+

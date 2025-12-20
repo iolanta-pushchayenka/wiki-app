@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { useAuth } from '../context/AuthContext';
 
 const HeaderWrapper = styled.header`
   width: 100%;
@@ -34,10 +35,14 @@ export const SearchInput = styled.input`
 `;
 
 export default function Header() {
+
+  const { logout } = useAuth();
+
   return (
     <HeaderWrapper>
       <Title>📝 My Wiki</Title>
       <SearchInput type="text" placeholder="Search..." />
+      <button onClick={logout}>Logout</button>
     </HeaderWrapper>
   );
 }

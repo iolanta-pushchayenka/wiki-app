@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 
 const Container = styled.div`
   max-width: 400px;
@@ -53,6 +55,8 @@ const Footer = styled.div`
 
 export default function RegisterPage() {
     const navigate = useNavigate();
+    const { login } = useAuth();
+
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -63,14 +67,23 @@ export default function RegisterPage() {
         setError("");
 
         try {
-            await axios.post("http://localhost:3000/auth/register", {
+          const res =  await axios.post("http://localhost:3000/auth/register", {
                 email,
                 password,
             });
 
-            navigate("/login");
+            const { token } = res.data;
+            
+            login(token);
+            navigate("/", { replace: true });
+
+
+
+            navigate("/");
         } catch (err) {
-            setError("Registration failed");
+            const message =
+            err.response?.data?.message || "Registration failed";
+        setError(message);
         }
     };
 

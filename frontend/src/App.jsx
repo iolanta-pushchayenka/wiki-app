@@ -13,6 +13,8 @@ import VersionViewPage from "./pages/VersionViewPage";
 import LoginPage from "./components/LoginPage";
 import RegisterPage from "./components/RegisterPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RequireAdmin from "./components/RequireAdmin";
+import UserManagement from "./components/UserManagement";
 
 function App() {
 
@@ -30,6 +32,9 @@ function App() {
         <Route path="/workspace/:wsId/article/new" element={<ProtectedRoute><ArticleForm /></ProtectedRoute>} />
         <Route path="/workspaces/:wsId/articles/:articleId/versions" element={<ProtectedRoute><VersionsListPage /></ProtectedRoute>} />
         <Route path="/workspaces/:wsId/articles/:articleId/versions/:versionNumber" element={<ProtectedRoute><VersionViewPage /></ProtectedRoute>} />
+        <Route path="/users" element={<RequireAdmin><UserManagement /></RequireAdmin>}
+/>
+
       </Routes>
     </BrowserRouter>
 

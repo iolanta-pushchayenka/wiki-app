@@ -1,4 +1,6 @@
 import db from "../../models/index.js";
+import { canEditResource } from "../utils/permissions.js";
+
 const { Article, ArticleVersion, Comment } = db;
 
 // GET all articles
@@ -92,7 +94,7 @@ export async function deleteArticle(req, res) {
         };
 
         // проверка прав
-        if (article.userId !== req.user.userId) {
+        if (!canEditResource(article.userId,req.user)) {
             return res.status(403).json({ error: "You do not have permission" });
         }
 
@@ -135,7 +137,7 @@ export async function updateArticle(req, res) {
         if (!article) return res.status(404).json({ error: "Article not found" });
 
         // проверка владельца
-        if (article.userId !== req.user.userId) {
+        if (!canEditResource(article.userId,req.user)) {
             return res.status(403).json({ error: "You cannot edit this article" });
         }
 
@@ -153,9 +155,6 @@ export async function updateArticle(req, res) {
         return res.status(500).json({ error: "Failed to update article" });
     }
 };
-
-
-
 
 // GET version history
 export async function getArticleVersionHistory(req, res) {

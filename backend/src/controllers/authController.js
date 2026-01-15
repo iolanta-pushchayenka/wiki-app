@@ -29,9 +29,7 @@ export async function register(req, res) {
             });
         }
 
-        const existingUser = await User.findOne({
-            where: { email }
-        })
+        const existingUser = await User.findOne({ where: { email } })
 
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" })
@@ -44,7 +42,13 @@ export async function register(req, res) {
             passwordHash
         })
 
-        res.status(201).json({ message: "User registered successfully" })
+        const token = jwt.sign({ userId: newUser.id, email: newUser.email, role: newUser.role },
+            JWT_SECRET,
+            { expiresIn: "1h" }
+        )
+
+        res.status(201).json({ token })
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });
@@ -77,7 +81,7 @@ export async function login(req, res) {
 
 
         const token = jwt.sign(
-            { userId: user.id, email: user.email },
+            { userId: user.id, email: user.email, role: user.role },
             JWT_SECRET,
             { expiresIn: "1h" }
         );

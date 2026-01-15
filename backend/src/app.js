@@ -8,6 +8,7 @@ import commentsRouter from "./routes/comments.js";
 import workspacesRouter from "./routes/workspaces.js";
 import authRouter from "./routes/auth.js";
 import logicRouter from "./routes/logic.js";
+import usersRouter from "./routes/users.js";
 
 
 export const app = express();
@@ -26,8 +27,7 @@ app.use("/articles", commentsRouter);
 
 
 app.use("/workspaces", workspacesRouter);
-
 app.use("/auth", authRouter);
-
 app.use("/logic", logicRouter);
+app.use("/users", usersRouter);
 

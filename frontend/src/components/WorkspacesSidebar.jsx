@@ -143,7 +143,9 @@ const ContentInput = styled.input`
 
 
 export default function WorkspacesSidebar() {
-  const { userId: currentUserId } = useAuth(); 
+  const { user } = useAuth();
+  const currentUserId = user?.userId;
+  const currentUserRole = user?.role;
   const [workspaces, setWorkspaces] = useState([]);
   const [articles, setArticles] = useState([]);
   const [selectedWs, setSelectedWs] = useState(null);
@@ -152,6 +154,7 @@ export default function WorkspacesSidebar() {
   const [newArticleTitle, setNewArticleTitle] = useState("");
 
   const navigate = useNavigate();
+
 
   const loadWorkspaces = async () => {
     try {
@@ -194,7 +197,8 @@ export default function WorkspacesSidebar() {
   };
 
   const deleteWorkspace = async (wsId, wsOwnerId) => {
-    if (Number(wsOwnerId) !== Number(currentUserId)) return;
+    if (Number(wsOwnerId) !== Number(currentUserId) &&
+      currentUserRole !== "admin") return;
     if (!window.confirm("Удалить этот workspace?")) return;
 
     try {
@@ -207,7 +211,8 @@ export default function WorkspacesSidebar() {
     }
   };
 
-  const isOwnerWorkspace = selectedWs && Number(selectedWs.userId) === Number(currentUserId);
+
+  const canCreateArticle = selectedWs && (Number(selectedWs.userId) === Number(currentUserId) || currentUserRole === "admin");
 
   return (
     <Layout>
@@ -225,7 +230,7 @@ export default function WorkspacesSidebar() {
             >
               {ws.name}
             </WorkspaceItem>
-            {Number(ws.userId) === Number(currentUserId) && (
+            {(Number(ws.userId) === Number(currentUserId) || currentUserRole === "admin") && (
               <DeleteWorkspaceButton onClick={() => deleteWorkspace(ws.id, ws.userId)}>✖</DeleteWorkspaceButton>
             )}
           </WorkspaceItemWrapper>
@@ -248,8 +253,28 @@ export default function WorkspacesSidebar() {
           <>
             <SectionTitle>{selectedWs.name}</SectionTitle>
 
-            
-            {isOwnerWorkspace && (
+
+            {/* {isOwnerWorkspace && (
+              <>
+                <h3>Создать статью</h3>
+                <ContentInput
+                  placeholder="Название статьи..."
+                  value={newArticleTitle}
+                  onChange={e => setNewArticleTitle(e.target.value)}
+                />
+                <ContentCreateButton
+                  onClick={() =>
+                    navigate(
+                      `/workspace/${selectedWs.id}/article/new?title=${encodeURIComponent(newArticleTitle)}`
+                    )
+                  }
+                >
+                  + Создать статью
+                </ContentCreateButton>
+              </>
+            )} */}
+
+            {canCreateArticle && (
               <>
                 <h3>Создать статью</h3>
                 <ContentInput
@@ -284,6 +309,8 @@ export default function WorkspacesSidebar() {
                   wsId={selectedWs.id}
                   onDelete={(deletedId) => setArticles(prev => prev.filter(x => x.id !== deletedId))}
                   articleUserId={a.userId}
+                  currentUserRole={currentUserRole}
+                  currentUserId={currentUserId}
                 />
               </ArticleItem>
             ))}

@@ -1,5 +1,7 @@
 import { sendNotification } from "../utils/websocket.js";
 import db from "../../models/index.js";
+import { canEditResource } from "../utils/permissions.js";
+
 const { Workspace, Article, ArticleVersion } = db;
 
 //POST create workspace
@@ -49,7 +51,7 @@ export async function deleteWorkspace(req, res) {
       return res.status(401).json({ error: "Workspace not found" })
     }
 
-    if (workspace.userId !== req.user.userId) {
+    if (!canEditResource(workspace.userId,req.user)) {
       return res.status(403).json({ error: "You cannot delete this workspace" });
     }
 
@@ -76,7 +78,7 @@ export async function createWorkspaceArticle(req, res) {
       return res.status(404).json({ error: "Workspace not found" });
     }
 
-    if (workspace.userId !== userId) {
+      if (!canEditResource(workspace.userId,req.user)) {
       return res.status(403).json({ error: "You cannot create articles in someone else's workspace" });
     }
 
@@ -110,6 +112,7 @@ export async function getWorkspaceArticles(req, res) {
 
     const articles = await Article.findAll({
       where: { workspaceId: id },
+      attributes: ["id", "userId"],
       include: [
         {
           model: ArticleVersion,
@@ -177,7 +180,7 @@ export async function updateWorkspaceArticle(req, res) {
       return res.status(404).json({ error: "Article not found in this workspace" });
     }
 
-    if (article.userId !== req.user.userId) {
+    if (!canEditResource(article.userId,req.user)) {
       return res.status(403).json({ error: "You cannot edit this article" });
     }
 

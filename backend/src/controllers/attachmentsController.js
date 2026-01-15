@@ -1,6 +1,8 @@
 import db from "../../models/index.js";
 import fs from "fs/promises";
 import path from "path";
+import { canEditResource } from "../utils/permissions.js";
+
 const { ArticleVersion, Article } = db;
 
 // UPLOAD attachment
@@ -15,7 +17,7 @@ export async function uploadAttachment(req, res) {
         if (!article) return res.status(404).json({ error: "Article not found" });
 
         
-        if (article.userId !== req.user.userId) {
+        if (!canEditResource(article.userId,req.user)) {
             return res.status(403).json({ error: "You cannot upload attachments to this article" });
         }
 
@@ -51,7 +53,7 @@ export async function deleteAttachment(req, res) {
         if (!article) return res.status(404).json({ error: "Article not found" });
 
     
-        if (article.userId !== req.user.userId) {
+        if (!canEditResource(article.userId,req.user)) {
             return res.status(403).json({ error: "You cannot delete attachments of this article" });
         }
 

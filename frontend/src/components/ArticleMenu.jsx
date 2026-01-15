@@ -48,17 +48,17 @@ const MenuItemButton = styled.button`
   }
 `;
 
-export default function ArticleMenu({ articleId, wsId, onDelete, articleUserId }) {
+export default function ArticleMenu({ articleId, wsId, onDelete, articleUserId, currentUserId, currentUserRole  }) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef(null);
-  const { userId } = useAuth();
 
-  const isOwner = userId === articleUserId;
+  const canDeleteOrEdit =
+  Number(articleUserId) === Number(currentUserId) ||
+  currentUserRole === "admin";
 
-  if (!isOwner) {
-    return null;
-  }
+if (!canDeleteOrEdit) return null;
+
 
   useEffect(() => {
     const closeMenu = (e) => {
@@ -114,5 +114,4 @@ export default function ArticleMenu({ articleId, wsId, onDelete, articleUserId }
     </div>
   );
 }
-
 

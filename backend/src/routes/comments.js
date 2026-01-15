@@ -5,7 +5,7 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 const router = Router();
 
 // GET all comments for article
-router.get("/:id/comments", getComments);
+router.get("/:id/comments", authMiddleware, getComments);
 
 // PUT update comment 
 router.put("/comment/:commentId", authMiddleware, updateComment);

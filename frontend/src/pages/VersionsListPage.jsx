@@ -3,6 +3,8 @@ import axios from "axios";
 import styled from "styled-components";
 import Header from "../components/Header";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 
 const Wrapper = styled.div`
   max-width: 900px;
@@ -34,7 +36,7 @@ background: #afeeee;
     ;
 
 
-    const BackButton = styled(Link)`
+const BackButton = styled(Link)`
       padding: 6px 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -53,13 +55,21 @@ export default function VersionsListPage() {
     const { wsId, articleId } = useParams();
     const [versions, setVersions] = useState([]);
     const navigate = useNavigate();
+    const { token } = useAuth();
 
     useEffect(() => {
-        axios
-            .get(`http://localhost:3000/articles/${articleId}/versions`)
+        axios.get(
+            `http://localhost:3000/articles/${articleId}/versions`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
             .then((res) => setVersions(res.data))
             .catch((err) => console.error(err));
-    }, [articleId]);
+    }, [articleId, token]);
+
 
     return (
         <>
@@ -91,6 +101,7 @@ export default function VersionsListPage() {
                                     >
                                         View
                                     </VersionButton>
+
                                 </td>
                             </tr>
                         ))}

@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "super_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function register(req, res) {
     try {

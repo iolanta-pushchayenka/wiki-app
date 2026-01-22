@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
@@ -140,7 +141,13 @@ const ContentInput = styled.input`
   margin-bottom: 10px;
 `;
 
-
+const SearchInput = styled.input`
+  width: 50%;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  margin-bottom: 15px;
+`;
 
 export default function WorkspacesSidebar() {
   const { user } = useAuth();
@@ -153,8 +160,11 @@ export default function WorkspacesSidebar() {
   const [newWsName, setNewWsName] = useState("");
   const [newArticleTitle, setNewArticleTitle] = useState("");
 
-  const navigate = useNavigate();
+  const [searchText, setSearchText] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
+  const navigate = useNavigate();
 
   const loadWorkspaces = async () => {
     try {
@@ -211,8 +221,41 @@ export default function WorkspacesSidebar() {
     }
   };
 
-
   const canCreateArticle = selectedWs && (Number(selectedWs.userId) === Number(currentUserId) || currentUserRole === "admin");
+
+  
+  useEffect(() => {
+    if (!selectedWs) return;
+
+    const handler = setTimeout(async () => {
+      if (!searchText.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      setSearchLoading(true);
+      try {
+        const res = await api.get("/articles/search", {
+          params: {
+            search: searchText,
+            workspaceId: selectedWs.id,
+            limit: 50,
+            page: 1
+          }
+        });
+        setSearchResults(res.data.articles);
+      } catch (err) {
+        console.error("Ошибка поиска статей:", err.response?.data || err.message);
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchText, selectedWs]);
+
+  const displayedArticles = searchText.trim() ? searchResults : articles;
 
   return (
     <Layout>
@@ -225,6 +268,7 @@ export default function WorkspacesSidebar() {
               active={selectedWs?.id === ws.id}
               onClick={() => {
                 setSelectedWs(ws);
+                setSearchText(""); 
                 loadArticles(ws.id);
               }}
             >
@@ -253,27 +297,6 @@ export default function WorkspacesSidebar() {
           <>
             <SectionTitle>{selectedWs.name}</SectionTitle>
 
-
-            {/* {isOwnerWorkspace && (
-              <>
-                <h3>Создать статью</h3>
-                <ContentInput
-                  placeholder="Название статьи..."
-                  value={newArticleTitle}
-                  onChange={e => setNewArticleTitle(e.target.value)}
-                />
-                <ContentCreateButton
-                  onClick={() =>
-                    navigate(
-                      `/workspace/${selectedWs.id}/article/new?title=${encodeURIComponent(newArticleTitle)}`
-                    )
-                  }
-                >
-                  + Создать статью
-                </ContentCreateButton>
-              </>
-            )} */}
-
             {canCreateArticle && (
               <>
                 <h3>Создать статью</h3>
@@ -294,21 +317,34 @@ export default function WorkspacesSidebar() {
               </>
             )}
 
-            <h2 style={{ marginTop: "30px" }}>Статьи</h2>
-            {articles.length === 0 && <p>В этом workspace пока нет статей</p>}
+            {/* Поле поиска */}
+            <h3>Поиск статей</h3>
+            <SearchInput
+              placeholder="Введите текст для поиска..."
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+            />
+            {searchLoading && <p>Идёт поиск...</p>}
 
-            {articles.map(a => (
+            <h2 style={{ marginTop: "30px" }}>Статьи</h2>
+            {displayedArticles.length === 0 && !searchLoading && (
+              <p>{searchText ? `По запросу "${searchText}" статьи не найдены` : "В этом workspace пока нет статей"}</p>
+            )}
+
+            {displayedArticles.map(a => (
               <ArticleItem
-                key={a.id}
-                onClick={() => navigate(`/workspace/${selectedWs.id}/article/${a.id}`)}
+                key={a.articleId || a.id}
+                onClick={() => navigate(`/workspace/${selectedWs.id}/article/${a.articleId || a.id}`)}
               >
-                {a.latestVersion?.title || "Без заголовка"}
+                {a.title || a.latestVersion?.title || "Без заголовка"}
 
                 <ArticleMenu
-                  articleId={a.id}
+                  articleId={a.articleId || a.id}
                   wsId={selectedWs.id}
-                  onDelete={(deletedId) => setArticles(prev => prev.filter(x => x.id !== deletedId))}
-                  articleUserId={a.userId}
+                  onDelete={(deletedId) =>
+                    setArticles(prev => prev.filter(x => (x.id || x.articleId) !== deletedId))
+                  }
+                  articleUserId={a.userId || a.latestVersion?.userId}
                   currentUserRole={currentUserRole}
                   currentUserId={currentUserId}
                 />

@@ -19,19 +19,6 @@ const Title = styled.h1`
   color: black;
 `;
 
-export const SearchInput = styled.input`
-  padding: 8px 12px;
-  width: 200px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  margin-right: 20px;
-
-  &:focus {
-    outline: none;
-    border-color: #888;
-  }
-`;
 
 const NavLinks = styled.div`
   display: flex;
@@ -90,9 +77,6 @@ export default function Header() {
   return (
     <HeaderWrapper>
       <Title>📝 My Wiki</Title>
-
-      <SearchInput type="text" placeholder="Search..." />
-
       <NavLinks>
         {user?.role === "admin" && (
           <ManagementButton onClick={() => navigate("/users")}>
@@ -111,4 +95,3 @@ export default function Header() {
     </HeaderWrapper>
   );
 }
-

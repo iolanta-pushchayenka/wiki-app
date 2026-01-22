@@ -1,7 +1,9 @@
 import db from "../../models/index.js";
 import { canEditResource } from "../utils/permissions.js";
+import { Op } from "sequelize";
 
 const { Article, ArticleVersion, Comment } = db;
+
 
 // GET all articles
 export async function getArticles(req, res) {
@@ -94,7 +96,7 @@ export async function deleteArticle(req, res) {
         };
 
         // проверка прав
-        if (!canEditResource(article.userId,req.user)) {
+        if (!canEditResource(article.userId, req.user)) {
             return res.status(403).json({ error: "You do not have permission" });
         }
 
@@ -137,7 +139,7 @@ export async function updateArticle(req, res) {
         if (!article) return res.status(404).json({ error: "Article not found" });
 
         // проверка владельца
-        if (!canEditResource(article.userId,req.user)) {
+        if (!canEditResource(article.userId, req.user)) {
             return res.status(403).json({ error: "You cannot edit this article" });
         }
 
@@ -200,3 +202,84 @@ export async function getArticleVersionByNumber(req, res) {
         res.status(500).json({ error: "Failed to fetch version" });
     }
 }
+
+
+export async function searchArticles(req, res) {
+    try {
+        const { search = "", workspaceId, limit = 50, page = 1 } = req.query;
+        const searchText = search.trim();
+
+        const parsedLimit = Number(limit);
+        const parsedPage = Number(page);
+        const offset = (parsedPage - 1) * parsedLimit;
+
+        const { Article, ArticleVersion, sequelize } = db;
+
+        const latestVersionSubquery = sequelize.literal(`(
+        SELECT MAX(av."versionNumber")
+        FROM "ArticleVersions" av
+        WHERE av."articleId" = "Article"."id"
+    )`);
+
+        const articles = await Article.findAll({
+            attributes: ["id", "workspaceId", "userId"],
+            where: workspaceId ? { workspaceId: Number(workspaceId) } : {},
+            include: [
+                {
+                    model: ArticleVersion,
+                    as: "ArticleVersions",
+                    attributes: ["title", "content", "versionNumber", "createdAt", "updatedAt"],
+                    required: true,
+                    where: {
+                        versionNumber: {
+                            [Op.eq]: latestVersionSubquery
+                        },
+                        ...(searchText && {
+                            [Op.or]: [
+                                { title: { [Op.iLike]: `%${searchText}%` } },
+                                { content: { [Op.iLike]: `%${searchText}%` } }
+                            ]
+                        })
+                    }
+                }
+            ],
+            order: [[
+                { model: ArticleVersion, as: "ArticleVersions" },
+                "createdAt",
+                "DESC"
+            ]],
+
+            limit: parsedLimit,
+            offset
+        });
+
+        const formatted = articles.map(a => {
+            const latest = a.ArticleVersions[0];
+            return {
+                articleId: a.id,
+                workspaceId: a.workspaceId,
+                userId: a.userId,
+                title: latest.title,
+                content: latest.content,
+                versionNumber: latest.versionNumber,
+                createdAt: latest.createdAt,
+                updatedAt: latest.updatedAt
+            };
+        });
+
+        return res.status(200).json({
+            page: parsedPage,
+            limit: parsedLimit,
+            total: formatted.length,
+            articles: formatted
+        });
+
+    } catch (err) {
+        console.error("searchArticles error:", err);
+        return res.status(500).json({
+            error: err.message || "Failed to search articles"
+        });
+    }
+}
+
+

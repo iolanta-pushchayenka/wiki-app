@@ -34,10 +34,6 @@ module.exports = {
           type: Sequelize.INTEGER,
           allowNull: false
         },
-        updatedByUserId: {
-          type: Sequelize.INTEGER,
-          allowNull: true
-        },
         createdAt: {
           type: Sequelize.DATE,
           allowNull: false,

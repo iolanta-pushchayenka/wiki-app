@@ -20,7 +20,7 @@ export async function getArticles(req, res) {
             include: [{
                 model: ArticleVersion,
                 as: "ArticleVersions",
-                order: [["versionNumber", "DESC"]],
+                order: [["versionNumber", "DESC"]], 
                 limit: 1
             }]
         });

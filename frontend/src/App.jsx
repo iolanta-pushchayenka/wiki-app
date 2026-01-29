@@ -5,7 +5,7 @@ import CreatePage from "./pages/CreatePage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import EditPage from "./pages/EditPage";
 import NotificationToast from './components/NotificationToast';
-import WorkspacesSidebar from "./components/WorkspacesSidebar";
+import ArticleList from "./components/WorkspacesSidebar";
 import ArticleForm from "./components/ArticleForm";
 import ArticleEdit from "./components/ArticleEdit";
 import VersionsListPage from "./pages/VersionsListPage";

@@ -24,16 +24,16 @@ node server.js
 ### API Endpoints:
 
 #### GET / 
-— Проверка сервера
+— Checking the server
 
 #### GET /articles
- — Получить список всех статей
+ — Get a list of all articles
 
 #### GET /articles/:id 
-— Получить статью по id
+— Get an article by id
 
 #### POST /articles
- — Создать новую статью
+ — Create a new article
 
 #### Body: 
 {"title": "Title", "content": "Content"}
@@ -54,48 +54,47 @@ npm install
 npm run dev 
 
 
-## Установка проекта
-
-# 1. Клонировать репозиторий
+## Installing the project
+# 1.Clone a repository
 
 git clone <your-repo-url>
 cd backend
 
-# Установка
+# Installation
 npm install 
 
-# 2. Создать файл окружения .env
+# 2. Create an environment file .env
 
-# Проект уже содержит .env.example. Создай рабочий .env командой:
+# The project already contains .env.example. Create a working .env with the command:
 
 cp .env.example .env
 
-# Открой .env и заполни параметры:
+# Open .env and fill in the parameters:
 
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=wiki_db
 DB_USER=postgres
-DB_PASS=your_password(заменить на свой пароль)
+DB_PASS=your_password(replace it with your password)
 
-# 3. Создать базу данных
+# 3. Create a database
 
 npx sequelize-cli db:create
 
-# 4.Применить миграции
+# 4.Apply migrations
 
 npx sequelize-cli db:migrate
 
-# После этого будут созданы таблицы:
+# After that, the tables will be created:
 
 Articles
 
 SequelizeMeta
 
-# Проверить можно в psql:
+# You can check it in psql:
 
 \dt
 
-# Запуск сервера
+# Starting the server
 npm start
 
